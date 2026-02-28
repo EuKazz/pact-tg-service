@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package pact.telegram;
+
+option go_package = "github.com/pact-tg-service/internal/gen/telegram; tg_pb";
+
+service TelegramService{
+    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+    rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse);
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+    rpc SubscribeMessages(SubscribeMessagesRequest) returns (stream MessageUpdate);
+}
+
+message CreateSessionRequest {}
+
+message CreateSessionResponse {
+    string session_id = 1;
+    string qr_code = 2;
+}
+
+message DeleteSessionRequest {
+    string session_id = 1;
+}
+
+message DeleteSessionResponse {}
+
+message SendMessageRequest {
+    string session_id = 1;
+    string peer = 2; // e.g. @durov
+    string text = 3;
+}
+
+message SendMessageResponse {
+    int64 message_id = 1;
+}
+
+message SubscribeMessagesRequest {
+    string session_id = 1;
+}
+
+message MessageUpdate {
+    int64 message_id = 1;
+    string from = 2;
+    string text = 3;
+    int64 timestamp = 4;
+}
