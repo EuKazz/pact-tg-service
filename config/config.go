@@ -1,9 +1,12 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strconv"
+	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/rs/zerolog"
 )
 
 // структура конфига
@@ -14,14 +17,20 @@ type Config struct {
 }
 
 // конструктор конфига
-func NewConfig() *Config {
+func NewConfig(logger zerolog.Logger) *Config {
+	if err := godotenv.Load(); err != nil {
+		logger.Warn().Msg(".env file not exist")
+	}
+
 	idStr := os.Getenv("TG_API_ID")
 	apiID, err := strconv.Atoi(idStr)
 	if err != nil {
-		fmt.Printf("❌ ОШИБКА КОНФИГА: TG_API_ID '%s' не является числом!\n", idStr)
+		logger.Fatal().Err(err).Str("input", idStr).Msg("TG_API_ID must be a valid number")
 	}
 	port := os.Getenv("PORT")
-	if port == "" {
+	if port != "" && !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	} else if port == "" {
 		port = ":8088"
 	}
 

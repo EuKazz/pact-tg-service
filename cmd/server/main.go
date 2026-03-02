@@ -25,7 +25,7 @@ func app() {
 	logger.Info().Msg("Запуск gRPC сервиса Telegram Manager")
 
 	// загрузка конфига
-	cfg := config.NewConfig()
+	cfg := config.NewConfig(logger)
 	// создание папки для сессий
 	if err := os.MkdirAll("sessions", 0755); err != nil {
 		logger.Fatal().Err(err).Msg("Не удалось создать папку для сессий")
@@ -34,11 +34,12 @@ func app() {
 	// инициализация менеджера
 	manager := telegram.NewManager(cfg.ApiID, cfg.ApiHash, logger)
 
-	// настройка сервера
+	// настройка адаптера, он принимает gRPC запросы и вызывает методы менеджера
 	grpcServer := grpc.NewServer()
 
 	// регистрация сервиса
 	tgHandler := service.NewTelegramGRPCService(manager, logger)
+	// связь с контрактом из прото-файла
 	tg_pb.RegisterTelegramServiceServer(grpcServer, tgHandler)
 
 	// включение reflection
